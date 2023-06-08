@@ -1,16 +1,13 @@
 from setuptools import setup
 
 setup(
-    name='awsume-1password-plugin',
+    name='awsume-bitwarden-plugin',
     version='1.1.0',
-    description='Automates awsume MFA entry via 1Password CLI.',
+    description='Automates awsume MFA entry via bitwarden CLI.',
     entry_points={
         'awsume': [
-            '1password = 1password'
+            'bitwarden = bitwarden'
         ]
     },
-    author='Tony Spataro',
-    author_email='pypi@tracker.xeger.net',
-    url='https://github.com/xeger/awsume-1password-plugin',
-    py_modules=['1password'],
+    author='Daniel Jensen',
 )

@@ -54,10 +54,9 @@ def beautify(msg):
 
 # Call 1Password to get an OTP for a given vault item.
 def get_otp(title):
-    try:
-        op = Popen(['op', 'item', 'get', '--otp', title],
-                   stdout=PIPE, stderr=PIPE)
-        linecount = 0
+    with Popen(['bw', '--raw', '--nointeraction', 'get', 'totp', title],
+               stdout=PIPE, stderr=PIPE) as op:
+
         while True:
             msg = op.stderr.readline().decode()
             if msg == '' and op.poll() is not None:
@@ -72,16 +71,14 @@ def get_otp(title):
                 logger.debug(msg.strip('\n'))
         if op.returncode != 0:
             return None
+
         return op.stdout.readline().decode().strip('\n')
-    except FileNotFoundError:
-        logger.error('Failed: missing `op` command')
-        return None
 
 
 # Find canonical profile name (e.g. with fuzzy matching rules).
 def canonicalize(config, profiles, name):
     target_name = profile.get_profile_name(config, profiles, name, log=False)
-    if profiles.get(target_name) != None:
+    if profiles.get(target_name) is not None:
         return target_name
     else:
         return None
@@ -91,7 +88,8 @@ def canonicalize(config, profiles, name):
 # Log stack trace to stderr in lieu of safe_print.
 def handle_crash():
     safe_print('Error invoking 1Password plugin; please file a bug report:\n  %s' %
-               ('https://github.com/xeger/awsume-1password-plugin/issues/new/choose'), colorama.Fore.RED)
+               ('https://github.com/xeger/awsume-1password-plugin/issues/new/choose')
+               , colorama.Fore.RED)
     traceback.print_exc(file=sys.stderr)
 
 
@@ -100,7 +98,7 @@ def pre_get_credentials(config: dict, arguments: argparse.Namespace, profiles: d
     try:
         target_profile_name = canonicalize(
             config, profiles, arguments.target_profile_name)
-        if target_profile_name != None:
+        if target_profile_name is not None:
             mfa_serial = get_mfa_serial(profiles, target_profile_name)
             if mfa_serial and not arguments.mfa_token:
                 item = find_item(config, mfa_serial)
